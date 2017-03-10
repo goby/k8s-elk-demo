@@ -1,4 +1,4 @@
-FROM logstash
+FROM logstash:2-alpine
 MAINTAINER Vincent Ambo <vincent@nordcloud.com>
 
 WORKDIR /opt/logstash
