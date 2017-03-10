@@ -11,7 +11,7 @@ spec:
         k8s-app: elk
     spec:
       containers:
-        - image: hub.c.163.com/gobyoung/elk:elasticsearch-2
+        - image: hub.c.163.com/gobyoung/elk:elasticsearch-2.4.0
           name: elasticsearch
           ports:
             - containerPort: 9200
