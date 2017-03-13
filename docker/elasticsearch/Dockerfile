@@ -1,4 +1,4 @@
-FROM elasticsearch:2.4.0
+FROM elasticsearch:2.4.4-alpine
 
 # Listen on first non-loopback device
 ADD elasticsearch.yml /usr/share/elasticsearch/config/elasticsearch.yml
