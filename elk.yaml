@@ -1,7 +1,14 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: elk-demo
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: elk-rc
+  namespace: elk-demo
   labels:
     k8s-app: elk
 spec:
@@ -35,3 +42,31 @@ spec:
           #gcePersistentDisk:
           #  pdName: es-storage-v1
           #  fsType: ext4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: elk-demo
+  labels:
+    k8s-app: elk
+spec:
+  selector:
+    k8s-app: elk
+  ports:
+    - port: 5601
+      name: kibana
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+  namespace: elk-demo
+  labels:
+    k8s-app: elk
+spec:
+  selector:
+    k8s-app: elk
+  ports:
+    - port: 8600
+      name: logstash
