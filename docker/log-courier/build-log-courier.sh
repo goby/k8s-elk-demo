@@ -2,7 +2,13 @@
 
 set -o errexit
 
+TAGNAME=$1
 BASEDIR=$PWD
+
+if [ -z "$TAGNAME" ]; then
+   echo "Usage: $0 <tagname>"
+   exit 1
+fi
 
 # build from source
 docker run --rm -v $BASEDIR/.src:/go/src -v $BASEDIR/.bin:/go/bin golang:alpine /bin/sh -c "apk update && \
@@ -12,5 +18,5 @@ docker run --rm -v $BASEDIR/.src:/go/src -v $BASEDIR/.bin:/go/bin golang:alpine 
    go generate . ./lc-admin && \
    go install . ./lc-admin ./lc-tlscert"
 
-docker build -t hub.c.163.com/gobyoung/log-courier:latest .
+docker build -t $TAGNAME .
 
