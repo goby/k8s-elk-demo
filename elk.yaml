@@ -1,48 +1,11 @@
 ---
+# Namespace
 apiVersion: v1
 kind: Namespace
 metadata:
   name: elk-demo
 ---
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: elk-rc
-  namespace: elk-demo
-  labels:
-    k8s-app: elk
-spec:
-  template:
-    metadata:
-      labels:
-        k8s-app: elk
-    spec:
-      containers:
-        - image: hub.c.163.com/gobyoung/elk:elasticsearch-2.4.0
-          name: elasticsearch
-          ports:
-            - containerPort: 9200
-          volumeMounts:
-            - name: es-storage
-              mountPath: /usr/share/elasticsearch/data
-        - image: hub.c.163.com/gobyoung/elk:logstash-2
-          name: logstash
-          ports:
-            - containerPort: 8600
-        - image: hub.c.163.com/gobyoung/elk:kibana-4
-          name: kibana
-          env:
-            - name: ELASTICSEARCH_URL
-              value: http://127.0.0.1:9200
-          ports:
-            - containerPort: 5601
-      volumes:
-        - name: es-storage
-          emptyDir: {}
-          #gcePersistentDisk:
-          #  pdName: es-storage-v1
-          #  fsType: ext4
----
+# Kibana Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -57,6 +20,7 @@ spec:
     - port: 5601
       name: kibana
 ---
+# LogStash Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -70,3 +34,77 @@ spec:
   ports:
     - port: 8600
       name: logstash
+---
+# ElasticSearch Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: elk-demo
+  labels:
+    k8s-app: elk
+spec:
+  selector:
+    k8s-app: elk
+    service: elasticsearch
+  ports:
+    - port: 9200
+      name: elasticsearch
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: elk-demo-es
+  namespace: elk-demo
+  labels:
+    k8s-app: elk
+    service: elasticsearch
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: elk
+        service: elasticsearch
+    spec:
+      containers:
+        - image: hub.c.163.com/elkdemo/elasticsearch:2.4.4-alpine
+          name: elasticsearch
+          ports:
+            - containerPort: 9200
+          volumeMounts:
+            - name: es-storage
+              mountPath: /usr/share/elasticsearch/data
+      volumes:
+        - name: es-storage
+          emptyDir: {}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: elk-demo-lk
+  namespace: elk-demo
+  labels:
+    k8s-app: elk
+    service: lk
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: elk
+        service: lk
+    spec:
+      containers:
+        - image: hub.c.163.com/elkdemo/logstash:2-alpine
+          name: logstash
+          ports:
+            - containerPort: 8600
+        - image: hub.c.163.com/elkdemo/kibana:4.1.1-alpine
+          name: kibana
+          env:
+            - name: ELASTICSEARCH_URL
+              value: http://elasticsearch:9200
+          ports:
+            - containerPort: 5601
+      volumes:
+        - name: es-storage
+          emptyDir: {}
